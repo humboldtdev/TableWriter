@@ -172,8 +172,10 @@ public class XlsTableWriter implements ITableWriter {
         sheet.createFreezePane(freezeColumns, table_header_row + 1);
         for(int i = 0; i < table_headers.size(); i++) {
             sheet.autoSizeColumn(i);
-            // Include width of drop down button
-            sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1000);
+            // Include width of drop down button, but don't break column size limits
+            int width = sheet.getColumnWidth(i) + 1000;
+            if (width < 255*256)
+                sheet.setColumnWidth(i, width);
         }
 
         table = null;
