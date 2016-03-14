@@ -20,12 +20,17 @@ public class CsvTableWriter implements ITableWriter {
 
     public CsvTableWriter(OutputStream out) {
 
-        writer = new CSVWriter(new OutputStreamWriter(out));
+        writer = new CSVWriter(new OutputStreamWriter(out), ',', '\"', "\r\n");
 
     }
 
     @Override
     public void writeDataRow(@Nonnull List<Object> data) {
+        writeDataRow(data, true);
+    }
+
+
+    public void writeDataRow(@Nonnull List<Object> data, boolean applyQuotesToAll) {
 
         String[] row = new String[data.size()];
 
@@ -39,14 +44,17 @@ public class CsvTableWriter implements ITableWriter {
             }
         }
 
-        writer.writeNext(row);
+        writer.writeNext(row, applyQuotesToAll);
 
     }
 
     @Override
     public void writeHeaders(@Nonnull List<String> headers) {
+        writeHeaders(headers, true);
+    }
 
-        writer.writeNext(headers.toArray(new String[headers.size()]));
+    public void writeHeaders(@Nonnull List<String> headers, boolean applyQuotesToAll) {
+        writer.writeNext(headers.toArray(new String[headers.size()]), applyQuotesToAll);
 
     }
 
