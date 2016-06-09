@@ -4,7 +4,7 @@
 
   <groupId>com.github.humboldtdev</groupId>
   <artifactId>TableWriter</artifactId>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
   <packaging>jar</packaging>
 
   <name>TableWriter</name>
@@ -39,6 +39,12 @@
           <groupId>org.apache.poi</groupId>
           <artifactId>poi-ooxml</artifactId>
           <version>3.13</version>
+          <exclusions>
+              <exclusion>
+                  <groupId>org.apache.poi</groupId>
+                  <artifactId>poi-ooxml-schemas</artifactId>
+              </exclusion>
+          </exclusions>
       </dependency>
       <!-- Table styles require full schema jar
       https://poi.apache.org/faq.html#faq-N10025
