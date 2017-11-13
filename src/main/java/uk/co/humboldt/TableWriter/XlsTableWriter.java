@@ -35,6 +35,20 @@ public class XlsTableWriter implements ITableWriter {
 
     private XSSFTable table;
 
+    private static boolean enableTable;
+
+    public static boolean isEnableTable() {
+        return enableTable;
+    }
+
+    /**
+     * Global flag to enable XLSX tables in output. Default is an unstructured sheet, similar to CSV
+     * export.
+     */
+    public static void setEnableTable(boolean enable) {
+        enableTable = enable;
+    }
+
     public XlsTableWriter(OutputStream stream) {
         this.stream = stream;
         workbook = new XSSFWorkbook();
@@ -60,8 +74,8 @@ public class XlsTableWriter implements ITableWriter {
 
     @Override
     public void writeDataRow(@Nonnull List<Object> data) {
-        if (table == null && table_headers != null)
-            start_table();
+        if (table == null && table_headers != null && enableTable)
+            start_ct_table();
 
 
         XSSFRow dataRow = sheet.createRow(row++);
@@ -76,7 +90,7 @@ public class XlsTableWriter implements ITableWriter {
     @Override
     public void writeHeaders(@Nonnull List<String> headers) {
 
-        if (table == null) {
+        if (table_headers == null) {
             table_headers = new ArrayList<>(headers);
             table_header_row = row;
 
@@ -102,7 +116,7 @@ public class XlsTableWriter implements ITableWriter {
 
     @Override
     public void writeSummary(@Nonnull List<Object> summary, boolean subtotal) {
-        if (! subtotal && table != null)
+        if (! subtotal)
             end_table();
 
         // Don't write summary rows to XLS output - leave for Excel to generate
@@ -125,7 +139,7 @@ public class XlsTableWriter implements ITableWriter {
     /**
      * Call to start a table section
      */
-    private void start_table() {
+    private void start_ct_table() {
         table = sheet.createTable();
         table.setDisplayName("Data");
         CTTable ctTable = table.getCTTable();
@@ -157,10 +171,8 @@ public class XlsTableWriter implements ITableWriter {
         }
     }
 
-    /**
-     * Call to end a table section.
-     */
-    private void end_table() {
+    private void end_ct_table()
+    {
         CTTable ctTable = table.getCTTable();
 
         AreaReference my_data_range = new AreaReference(new CellReference(table_header_row, 0),
@@ -168,6 +180,16 @@ public class XlsTableWriter implements ITableWriter {
 
         /* Set Range to the Table */
         ctTable.setRef(my_data_range.formatAsString());
+
+    }
+
+    /**
+     * Call to end a table section.
+     */
+    private void end_table() {
+
+        if (enableTable)
+            end_ct_table();
 
         sheet.createFreezePane(freezeColumns, table_header_row + 1);
         for(int i = 0; i < table_headers.size(); i++) {
@@ -184,8 +206,7 @@ public class XlsTableWriter implements ITableWriter {
     @Override
     public void close() throws IOException {
 
-        if (table != null)
-            end_table();
+        end_table();
 
 
         workbook.write(stream);
